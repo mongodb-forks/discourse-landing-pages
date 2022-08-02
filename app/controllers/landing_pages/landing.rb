@@ -21,7 +21,9 @@ class LandingPages::LandingController < ::ActionController::Base
   before_action :find_category_user, only: [:subscription]
 
   helper_method :list_item_html,
-                :list_topics
+                :list_topics,
+                :list_tags_by,
+                :list_group_owners_by
 
   def show
     if @page.present?
@@ -218,6 +220,36 @@ class LandingPages::LandingController < ::ActionController::Base
       )
     end
     html
+  end
+
+  def list_group_owners_by(group_name: nil)
+    if group_name
+      group = Group.find_by(name: group_name)
+      if group && (
+        (group.visibility_level == Group.visibility_levels[:public]) ||
+        (@group && @group.id == group.id)
+      )
+        users = GroupUser.where(group_id: group.id, owner: true)
+        owners = []
+        users.each do |u|
+          owners.push(User.find(u.user_id))
+        end
+        return owners.to_ary
+      end
+    end
+    []
+  end
+
+  def list_tags_by(topic_id: nil)
+    if topic_id
+      tags = TopicTag.where(topic_id: topic_id)
+      results = []
+      tags.each do |t|
+        results.push(Tag.find(t.tag_id))
+      end
+      return results
+    end
+    []
   end
 
   def list_topics(opts, list_opts)

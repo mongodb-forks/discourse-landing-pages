@@ -23,7 +23,8 @@ class LandingPages::LandingController < ::ActionController::Base
   helper_method :list_item_html,
                 :list_topics,
                 :list_tags_by,
-                :list_group_owners_by
+                :list_group_owners_by,
+                :list_group_messages_by
 
   def show
     if @page.present?
@@ -220,6 +221,28 @@ class LandingPages::LandingController < ::ActionController::Base
       )
     end
     html
+  end
+
+  def list_group_messages_by(group_name: nil)
+    if group_name
+      group = Group.find_by(name: group_name)
+      if group && (
+        (group.visibility_level == Group.visibility_levels[:public]) ||
+        (@group && @group.id == group.id)
+      )
+        query = Topic.where("topics.archetype = 'private_message'")
+                     .joins("LEFT JOIN(
+                              SELECT * FROM topic_allowed_groups _tg
+                              LEFT JOIN group_users gu
+                              ON gu.user_id = #{current_user.id.to_i}
+                              AND gu.group_id = _tg.group_id
+                              WHERE gu.group_id = #{group.id}
+                            ) tg ON topics.id = tg.topic_id")
+                      .where("tg.topic_id IS NOT NULL")
+        return query.to_ary
+      end
+    end
+    []
   end
 
   def list_group_owners_by(group_name: nil)

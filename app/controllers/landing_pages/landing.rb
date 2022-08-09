@@ -24,7 +24,8 @@ class LandingPages::LandingController < ::ActionController::Base
                 :list_topics,
                 :list_tags_by,
                 :list_group_owners_by,
-                :list_group_messages_by
+                :list_group_messages_by,
+                :is_user_in_group
 
   def show
     if @page.present?
@@ -222,6 +223,20 @@ class LandingPages::LandingController < ::ActionController::Base
     end
     html
   end
+
+  def is_user_in_group(group_name: nil)
+    if group_name
+      group = Group.find_by(name: group_name)
+      if group && (
+        (group.visibility_level == Group.visibility_levels[:public]) ||
+        (@group && @group.id == group.id)
+      )
+        return false unless membership = GroupUser.find_by(group_id: group.id, user_id: current_user.id)
+        return true 
+      end
+    end
+    false
+  end 
 
   def list_group_messages_by(group_name: nil)
     if group_name

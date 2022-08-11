@@ -232,11 +232,11 @@ class LandingPages::LandingController < ::ActionController::Base
         (@group && @group.id == group.id)
       )
         return false unless membership = GroupUser.find_by(group_id: group.id, user_id: current_user.id)
-        return true 
+        return true
       end
     end
     false
-  end 
+  end
 
   def list_group_messages_by(group_name: nil)
     if group_name
@@ -254,6 +254,7 @@ class LandingPages::LandingController < ::ActionController::Base
                               WHERE gu.group_id = #{group.id}
                             ) tg ON topics.id = tg.topic_id")
                       .where("tg.topic_id IS NOT NULL")
+                      .order("topics.updated_at DESC")
         return query.to_ary
       end
     end

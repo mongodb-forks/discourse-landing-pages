@@ -25,7 +25,8 @@ class LandingPages::LandingController < ::ActionController::Base
                 :list_tags_by,
                 :list_group_owners_by,
                 :list_group_messages_by,
-                :is_user_in_group
+                :is_user_in_group,
+                :is_user_rsvp_to_event,
 
   def show
     if @page.present?
@@ -222,6 +223,20 @@ class LandingPages::LandingController < ::ActionController::Base
       )
     end
     html
+  end
+
+  def is_user_rsvp_to_event(topic_id: nil)
+    if topic_id
+      return User.where("#{current_user.id.to_i} IN (
+                                            SELECT json_array_elements_text(
+                                              CAST((
+                                              SELECT tcf.value
+                                              FROM topic_custom_fields AS tcf
+                                              WHERE topic_id = #{topic_id}
+                                              AND tcf.name = 'event_going') AS json)
+                                              )::int)").any?
+    end
+    false
   end
 
   def is_user_in_group(group_name: nil)

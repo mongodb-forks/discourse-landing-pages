@@ -8,7 +8,7 @@ import I18n from "I18n";
 
 const location = window.location;
 const port = location.port ? ":" + location.port : "";
-const baseUrl = location.protocol + "//" + location.hostname + port;
+const baseUrl = window.location.href.split('/admin')[0];
 
 export default Component.extend({
   classNames: "page-admin",

@@ -21,7 +21,12 @@ class LandingPages::LandingController < ::ActionController::Base
   before_action :find_category_user, only: [:subscription]
 
   helper_method :list_item_html,
-                :list_topics
+                :list_topics,
+                :list_tags_by,
+                :list_group_owners_by,
+                :list_group_messages_by,
+                :is_user_in_group,
+                :is_user_rsvp_to_event,
 
   def show
     if @page.present?
@@ -218,6 +223,87 @@ class LandingPages::LandingController < ::ActionController::Base
       )
     end
     html
+  end
+
+  def is_user_rsvp_to_event(topic_id: nil)
+    if topic_id
+      return User.where("#{current_user.id.to_i} IN (
+                                            SELECT json_array_elements_text(
+                                              CAST((
+                                              SELECT tcf.value
+                                              FROM topic_custom_fields AS tcf
+                                              WHERE topic_id = #{topic_id}
+                                              AND tcf.name = 'event_going') AS json)
+                                              )::int)").any?
+    end
+    false
+  end
+
+  def is_user_in_group(group_name: nil)
+    if group_name
+      group = Group.find_by(name: group_name)
+      if group && (
+        (group.visibility_level == Group.visibility_levels[:public]) ||
+        (@group && @group.id == group.id)
+      )
+        return false unless membership = GroupUser.find_by(group_id: group.id, user_id: current_user.id)
+        return true
+      end
+    end
+    false
+  end
+
+  def list_group_messages_by(group_name: nil)
+    if group_name
+      group = Group.find_by(name: group_name)
+      if group && (
+        (group.visibility_level == Group.visibility_levels[:public]) ||
+        (@group && @group.id == group.id)
+      )
+        query = Topic.where("topics.archetype = 'private_message'")
+                     .joins("LEFT JOIN(
+                              SELECT * FROM topic_allowed_groups _tg
+                              LEFT JOIN group_users gu
+                              ON gu.user_id = #{current_user.id.to_i}
+                              AND gu.group_id = _tg.group_id
+                              WHERE gu.group_id = #{group.id}
+                            ) tg ON topics.id = tg.topic_id")
+                      .where("tg.topic_id IS NOT NULL")
+                      .order("topics.updated_at DESC")
+        return query.to_ary
+      end
+    end
+    []
+  end
+
+  def list_group_owners_by(group_name: nil)
+    if group_name
+      group = Group.find_by(name: group_name)
+      if group && (
+        (group.visibility_level == Group.visibility_levels[:public]) ||
+        (@group && @group.id == group.id)
+      )
+        users = GroupUser.where(group_id: group.id, owner: true)
+        owners = []
+        users.each do |u|
+          owners.push(User.find(u.user_id))
+        end
+        return owners.to_ary
+      end
+    end
+    []
+  end
+
+  def list_tags_by(topic_id: nil)
+    if topic_id
+      tags = TopicTag.where(topic_id: topic_id)
+      results = []
+      tags.each do |t|
+        results.push(Tag.find(t.tag_id))
+      end
+      return results
+    end
+    []
   end
 
   def list_topics(opts, list_opts)

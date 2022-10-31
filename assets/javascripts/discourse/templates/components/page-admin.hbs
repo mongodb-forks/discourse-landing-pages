@@ -164,20 +164,41 @@
       {{i18n "admin.landing_pages.page.category.label"}}
     </label>
 
-    {{category-chooser
+     {{category-chooser
       class="category-select"
       value=page.category_id
-      allowUncategorized=false
+       allowUncategorized=false
       onChange=(action (mut page.category_id))
-      options=(hash
-        disabled=hasParent
-      )
-    }}
-
+       options=(hash
+         disabled=hasParent
+       )
+     }}
+    
     <div class="control-instructions">
       {{i18n "admin.landing_pages.page.category.instructions"}}
     </div>
   </div>
+
+  <div class="control-group">
+    <label class="control-label">
+      {{i18n "admin.landing_pages.page.tag.label"}}
+    </label>
+
+    {{mini-tag-chooser
+      class="tag-select"
+      value=page.tag_id
+      allowUncategorized=false
+      onChange=(action (mut page.tag_id))
+      options=(hash
+        disabled=hasParent
+      )
+    }}
+    <div class="control-instructions">
+      {{i18n "admin.landing_pages.page.tag.instructions"}}
+    </div>
+    
+  </div>
+
 </div>
 
 <div class="page-editor">

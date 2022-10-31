@@ -93,20 +93,31 @@ after_initialize do
   full_path = "#{Rails.root}/plugins/discourse-landing-pages/assets/stylesheets/page/page.scss"
   Stylesheet::Importer.plugin_assets['landing_page'] = Set[full_path]
 
+  add_to_class(:topic_tags, :landing_page_id) do
+    (LandingPages::Cache.new(LandingPages::TAG_IDS_KEY).read || {})
+      .transform_keys(&:to_s)[self.id]
+  end
+
   add_to_class(:category, :landing_page_id) do
     (LandingPages::Cache.new(LandingPages::CATEGORY_IDS_KEY).read || {})
       .transform_keys(&:to_i)[self.id]
   end
 
-  add_to_class(:topic, :landing_page_url) do
-    return nil if !category
 
+  add_to_class(:topic, :landing_page_url) do
+    topic_tag_landing = (LandingPages::Cache.new(LandingPages::TAG_IDS_KEY).read || {})[tags.first.name]
+    if topic_tag_landing && page = LandingPages::Page.find(topic_tag_landing)
+      return page.path
+    end
+
+    return nil if !category
     if category.landing_page_id &&
         page = LandingPages::Page.find(category.landing_page_id)
       page.path + "/#{slug}"
     else
       nil
     end
+
   end
 
   add_to_serializer(:topic_view, :landing_page_url) do

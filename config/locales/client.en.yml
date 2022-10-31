@@ -2,7 +2,7 @@ en:
   js:
     topic:
       landing_page:
-        link: Landing Page
+        link: MUG Page
 
   admin_js:
     admin:
@@ -36,6 +36,9 @@ en:
           category:
             label: "Category"
             instructions: "Connect page to category (requires child pages)"
+          tag:
+            label: "Tag"
+            instructions: "Connect page to a tag (only one)"
           path:
             label: "Path"
             placeholder: "path"

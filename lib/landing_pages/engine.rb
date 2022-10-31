@@ -9,6 +9,7 @@ module ::LandingPages
   PLUGIN_NAME ||= "landing_pages"
   PATHS_KEY ||= "paths"
   CATEGORY_IDS_KEY ||= "category_ids"
+  TAG_IDS_KEY ||= "tag_ids"
 
   def self.paths
     LandingPages::Cache.wrap(PATHS_KEY) do

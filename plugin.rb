@@ -105,6 +105,8 @@ after_initialize do
 
 
   add_to_class(:topic, :landing_page_url) do
+    return nil if !tags
+    return nil if !tags.first
     topic_tag_landing = (LandingPages::Cache.new(LandingPages::TAG_IDS_KEY).read || {})[tags.first.name]
     if topic_tag_landing && page = LandingPages::Page.find(topic_tag_landing)
       return page.path

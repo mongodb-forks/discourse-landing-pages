@@ -75,7 +75,8 @@ class LandingPages::PageController < LandingPages::AdminController
         :theme_id,
         :body,
         :menu,
-        group_ids: []
+        group_ids: [],
+        tag_id: [],
       ).to_h
   end
 

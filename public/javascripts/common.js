@@ -72,6 +72,7 @@
         page_id: $topicList.data("page-id"),
         list_opts: {
           category: $topicList.data("list-category"),
+          tags: $topicList.data("list-tags"),
           except_topic_ids: currentTopicIds,
           page,
           per_page: perPage,

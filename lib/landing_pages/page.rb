@@ -13,7 +13,7 @@ class LandingPages::Page
   end
 
   def self.discourse_attrs
-    %w(theme_id group_ids category_id).freeze
+    %w(theme_id group_ids category_id tag_id).freeze
   end
 
   def self.pages_attrs
@@ -72,6 +72,13 @@ class LandingPages::Page
       category_id_map[self.category_id.to_i] = self.id
       cache.write(category_id_map)
     end
+
+    if self.tag_id
+      cache = LandingPages::Cache.new(LandingPages::TAG_IDS_KEY)
+      tag_id_map = cache.read || {}
+      tag_id_map[self.tag_id[0]] = self.id
+      cache.write(tag_id_map)
+    end
   end
 
   def destroy
@@ -82,6 +89,7 @@ class LandingPages::Page
 
   def after_destroy
     LandingPages::Cache.new(LandingPages::CATEGORY_IDS_KEY).delete
+    LandingPages::Cache.new(LandingPages::TAG_IDS_KEY).delete
   end
 
   def validate
